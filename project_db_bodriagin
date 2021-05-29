@@ -1,7 +1,35 @@
 -- Для справки:
 Дневная смена 8-20, ночная смена - 20-8 --
 
+--Создание таблиц--
+CREATE TABLE worker (
+	id SERIAL PRIMARY KEY,
+	name varchar(255) NOT NULL,
+	surname varchar(255) NOT NULL,
+	date_birth date,
+	work_priority varchar(50)
+)
 
+CREATE TABLE schedule (
+	id serial PRIMARY KEY,
+	worker_id integer,
+	day_of_week varchar(255) NOT NULL,
+	shift varchar(255) NOT NULL,
+	CONSTRAINT worker_id FOREIGN KEY (worker_id)
+		REFERENCES worker (id)
+)
+
+
+--Заполнение данными--
+INSERT INTO worker (name, surname, date_birth, work_priority)
+VALUES ('Иван','Иванов', '2000,03,18','ночь')
+
+INSERT INTO schedule (day_of_week, shift, worker_id)
+VALUES ('вторник','день', '3')
+
+
+
+--Запросы--
 --вывод всей таблицы с рассписанием--
 SELECT*
 FROM schedule
