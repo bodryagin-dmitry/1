@@ -1,0 +1,117 @@
+-- Для справки:
+Дневная смена 8-20, ночная смена - 20-8
+Каждый пользователь знает свой id (его в будущем будет видно в ЛК) --
+
+--Создание таблиц--
+CREATE TABLE worker (
+	id SERIAL PRIMARY KEY,
+	name varchar(255) NOT NULL,
+	surname varchar(255) NOT NULL,
+	date_birth date,
+	work_priority varchar(50)
+)
+
+CREATE TABLE schedule (
+	id serial PRIMARY KEY,
+	worker_id integer,
+	day_of_week varchar(255) NOT NULL,
+	shift varchar(255) NOT NULL,
+	CONSTRAINT worker_id FOREIGN KEY (worker_id)
+		REFERENCES worker (id)
+)
+
+CREATE TABLE replacement (
+	id serial PRIMARY KEY,
+	worker_id integer,
+	day_off boolean NOT NULL,
+	day_of_week varchar(255) NOT NULL,
+	shift varchar(255) NOT NULL,
+	need_replacement boolean,
+	CONSTRAINT worker_id FOREIGN KEY (worker_id)
+		REFERENCES worker (id)
+)
+
+--тут я добавил еще один атребут для блокировки--
+ALTER TABLE worker ADD blocking boolean;
+
+--заполнял данными, путем редактирования таблицы--
+UPDATE worker
+SET blocking = 'false'
+WHERE id = 1;
+
+
+--Заполнение данными--
+INSERT INTO worker (name, surname, date_birth, work_priority)
+VALUES ('Иван','Иванов', '2000,03,18','ночь')
+
+INSERT INTO schedule (day_of_week, shift, worker_id)
+VALUES ('вторник','день', '3')
+--p.s.: таблицу с заменами заполнять не нужно, т.к. это делают сами пользователи (ниже есть запрос,
+в кот. пользователь отправляет запрос на замену)--
+
+
+--Запросы--
+--вывод всей таблицы с рассписанием--
+SELECT*
+FROM schedule
+
+--вывод всей таблицы с рабочими--
+SELECT*
+FROM worker
+
+--id работников, которые работают в ночную смену по всем дням в неделю--
+SELECT worker_id, day_of_week
+FROM schedule
+WHERE shift = 'ночь'
+
+--id работников, которые работают в ночную смену в понедельник--
+SELECT worker_id
+FROM schedule
+WHERE shift = 'ночь' AND day_of_week = 'понедельник'
+
+--авторизация пользователя+выставление приоритета рабочей смены--
+INSERT INTO worker (name, surname, date_birth, work_priority)
+VALUES ('Иван','Иванов', '2000,03,18','ночь')
+
+--фи всех рабочих, которые имеют рабочую смену на данный момент по дням недели--
+SELECT w.name, w.surname, sc.day_of_week, sc.shift
+FROM worker w, schedule sc
+WHERE w.id = sc.worker_id
+
+--просмотр своего расписания для пользователя (напр., для Ивана Иванова)--
+SELECT w.name, w.surname, sc.day_of_week, sc.shift
+FROM worker w, schedule sc
+WHERE w.id = sc.worker_id
+AND w.name = 'Иван'AND w.surname = 'Иванов'
+
+--вывод фи с сортировкой по имени и фамилии--
+SELECT name, surname
+FROM worker
+ORDER BY surname, name
+
+--напр., Иван Иванов хочет посмотреть с кем он будет работать в понедельник ночью--
+SELECT w.name, w.surname, sc.day_of_week, sc.shift
+FROM worker w, schedule sc
+WHERE w.id = sc.worker_id
+AND sc.day_of_week = 'понедельник' AND sc.shift = 'ночь'
+
+--сортировка по дате рождения(от самого молодого к наиболее старшему)--
+SELECT name, surname, date_birth
+FROM worker
+ORDER BY date_birth DESC
+
+--просьба пользователя (напр., Петра Петрова) о переносе смены,
+а также уведомление, что он не выйдет(берет отгул, болеет) --
+INSERT INTO replacement (worker_id, day_off, day_of_week, shift)
+VALUES ('2','true','понедельник','ночь')
+
+--размещение заявки админом о необходимости замены--
+UPDATE replacement
+SET need_replacement = 'true'
+WHERE id = 3;
+
+--так админ может заменить, например, Петра Петрова (он дейоффнулся)
+с id=2 на Илью Сидорова с id=4--
+UPDATE schedule
+SET worker_id = '4'
+WHERE id = 2;
