@@ -1,0 +1,52 @@
+--Данная база данных представляет собой интернет-магазин по продаже строительных материалов. 
+--Он работает по пред заказу, с оплатой при получении.
+--То есть у компании есть товары (табл. products), которые имеют наименование. 
+--Покупатель может приобрести товар. 
+--Для этого необходимо записать имя и фамилию покупателя, его номер мобильного телефона в таблицу customers. 
+--Заказ «оформляется» в табл. orders , где фиксируется дата оформления заказа. 
+--Информация о заказе хранится в таблице orders_info, где указывается кол-во товара и его цена. 
+--Таблица deliveries хранит дату доставки.
+
+
+
+
+CREATE TABLE products
+(
+    product_id SERIAL PRIMARY KEY,
+    product_name VARCHAR(255)  NOT NULL
+);
+
+CREATE TABLE deliveries
+(    
+    product_id INTEGER NOT NULL,
+    delivery_date DATE NOT NULL,
+    product_amount INTEGER NOT NULL,    
+    FOREIGN KEY (product_id) REFERENCES products (product_id)
+);
+
+CREATE TABLE customers
+(
+    customer_id SERIAL PRIMARY KEY,
+    customer_name VARCHAR(150) NOT NULL,
+	customer_surname VARCHAR(150) NOT NULL,
+	customer_number VARCHAR(12) NOT NULL
+);
+
+CREATE TABLE orders
+(
+    order_id SERIAL PRIMARY KEY,
+	customer_id INTEGER NOT NULL,
+    order_date DATE NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers (customer_id)
+);
+
+CREATE TABLE orders_info
+(
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    product_amount INTEGER NOT NULL,
+    product_price INTEGER NOT NULL,
+    CONSTRAINT PK_ORDERS_INFO PRIMARY KEY (order_id, product_id),  
+    FOREIGN KEY (product_id) REFERENCES products (product_id),
+    FOREIGN KEY (order_id) REFERENCES orders (order_id)
+);
