@@ -1,0 +1,50 @@
+=========описание системы==========
+--Данная база данных представляет собой площадку по подготовке к ЕГЭ,
+--после экзаменами по ОГЭ. Ученик, после сдачи ОГЭ поступает в эту
+--"школу по подготовке", вносит свой средний балл по предметам.
+--Это может быть нужно преподавателю - индивидуальный подход к
+--ученику, исходя из его уровня знаний. Преподаватель составляет расписание,
+--указывает начало занятия и конец. Посещение контролируется путем записи
+--преподавателем даты визита ученика, которая хранится в «classes». В будущем
+--можно расширить  таблицу занятий, добавив возможность закреплять домашнее задание,
+--например. Ученик, в свою очередь, смотрит расписание: преподавателя, номер класса,
+--время и дату и приходит к преподавателю.
+
+==========скрипт============
+
+CREATE TABLE teachers (
+	id SERIAL PRIMARY KEY,
+	name varchar(255) NOT NULL,
+	surname varchar(255) NOT NULL,
+	discipline varchar(255) NOT NULL,
+	sex varchar(1) NOT NULL
+);
+
+CREATE TABLE students (
+	id SERIAL PRIMARY KEY,
+	name varchar(255) NOT NULL,
+	surname varchar(255) NOT NULL,
+	birth_day DATE NOT NULL,
+	sex varchar(1) NOT NULL
+);
+
+CREATE TABLE classes ( 
+	id SERIAL PRIMARY KEY,
+	students_id integer NOT NULL REFERENCES students(id),
+	teachers_id integer NOT NULL REFERENCES teachers(id),
+	date_of_visit date
+);
+
+CREATE TABLE schedule (
+	id SERIAL PRIMARY KEY,
+	teachers_id integer NOT NULL REFERENCES teachers(id),
+	start_of_class timestamp NOT NULL,
+	end_of_class timestamp NOT NULL,
+	class_number varchar(10) NOT NULL
+);
+
+CREATE TABLE scores_oge (
+	id SERIAL PRIMARY KEY,
+	students_id integer NOT NULL REFERENCES students(id),
+	average_score varchar(5) NOT NULL
+);
